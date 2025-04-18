@@ -110,7 +110,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <a href="" class="text-dark d-flex justify-content-between" style="text-decoration: none;">
+                        <a href="{{ route('pengadaan') }}" class="text-dark d-flex justify-content-between" style="text-decoration: none;">
                             <p style="font-weight: 500; font-size:1rem; margin-bottom: 0;">Detail</p>
                             <i class="fa-solid fa-arrow-right-long pt-2"></i>
                         </a>
@@ -134,10 +134,24 @@
                     <span class="input-group-text bg-primary text-white border-0">
                         <i class="fas fa-book-open"></i>
                     </span>
-                    <input type="search" class="form-control border-primary" placeholder="Judul, penulis, atau kata kunci..." aria-label="Search" />
-                    <button class="btn btn-primary px-4 d-flex align-items-center" type="button">
+                    <input type="search" id="searchInput" class="form-control border-primary" placeholder="Cari Judul Buku yang Anda Cari..." aria-label="Search" />
+                    <button class="btn btn-primary px-4 d-flex align-items-center" id="searchButton" type="button">
                         <i class="fas fa-search me-2"></i> Cari
                     </button>
+                </div>
+                
+                <!-- Add results container -->
+                <div id="searchResults" class="mt-3" style="display: none;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-2">
+                            <h6 class="m-0 fw-bold">Hasil Pencarian</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="resultsContainer" class="list-group list-group-flush">
+                                <!-- Search results will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -264,3 +278,110 @@
     </div>
 </div>
 @endsection
+
+@push('script')
+<script>
+    $(document).ready(function() {
+        // Function to handle search
+        function performSearch() {
+            const query = $('#searchInput').val().trim();
+            
+            if (query.length > 0) {
+                $.ajax({
+                    url: "{{ route('cariBuku') }}",
+                    type: "GET",
+                    data: {
+                        query: query
+                    },
+                    success: function(data) {
+                        displayResults(data);
+                    },
+                    error: function(error) {
+                        console.log("Error:", error);
+                    }
+                });
+            } else {
+                $('#searchResults').hide();
+            }
+        }
+        
+        // Display the search results
+        function displayResults(bukus) {
+            const resultsContainer = $('#resultsContainer');
+            resultsContainer.empty();
+            
+            if (bukus.length > 0) {
+                bukus.forEach(function(buku) {
+                    let stockBadge = '';
+                    if (buku.stok > 15) {
+                        stockBadge = `<span class="badge bg-success ms-2">${buku.stok}</span>`;
+                    } else if (buku.stok > 10) {
+                        stockBadge = `<span class="badge bg-warning text-dark ms-2">${buku.stok}</span>`;
+                    } else {
+                        stockBadge = `<span class="badge bg-danger ms-2">${buku.stok}</span>`;
+                    }
+                    
+                    const formattedPrice = new Intl.NumberFormat('id-ID').format(buku.harga);
+                    
+                    resultsContainer.append(`
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 text-primary p-2 me-3 rounded-circle">
+                                            <i class="fas fa-book"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">${buku.nama}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-building me-1"></i>
+                                                ${buku.data_penerbit_buku.nama}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold">Rp. ${formattedPrice}</div>
+                                    <div>Stok: ${stockBadge}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+                
+                $('#searchResults').show();
+            } else {
+                resultsContainer.append(`
+                    <div class="list-group-item text-center py-3">
+                        <i class="fas fa-search-minus text-muted mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0">Tidak ada hasil yang ditemukan.</p>
+                    </div>
+                `);
+                $('#searchResults').show();
+            }
+        }
+        
+        // Search on button click
+        $('#searchButton').on('click', function() {
+            performSearch();
+        });
+        
+        // Search on pressing Enter
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which == 13) {
+                performSearch();
+                return false;
+            }
+        });
+        
+        // Live search with debounce
+        let searchTimeout;
+        $('#searchInput').on('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                performSearch();
+            }, 500);
+        });
+    });
+</script>
+@endpush

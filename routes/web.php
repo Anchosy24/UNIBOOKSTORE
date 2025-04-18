@@ -7,6 +7,7 @@ use App\Http\Controllers\DataController;
 Route::get('/', [DataController::class, 'index'])->name('index');
 
 Route::get('/admin', function(){return view('admin.admin');})->name('admin');
+Route::get('/cari', [DataController::class, 'cariBuku'])->name('cariBuku');
 
 #Route buku
 Route::get('/admin/buku', [DataController::class, 'indexBuku'])->name('indexBuku');

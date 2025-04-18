@@ -35,6 +35,17 @@ class DataController extends Controller
         ]);
     }
 
+    public function cariBuku(Request $request){
+        $query = $request->get('query');
+        
+        $buku = Buku::where('nama', 'LIKE', '%'.$query.'%')
+            ->with('dataPenerbitBuku')
+            ->limit(10)
+            ->get();
+        
+        return response()->json($buku);
+    }
+    
     #Pengelolaan Buku
     public function indexBuku() {
         $buku = Buku::orderByDesc('updated_at')->get();
