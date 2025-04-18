@@ -260,7 +260,7 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="#" class="card border-0 bg-success bg-opacity-10 text-success h-100 text-decoration-none">
+                                <a href="{{ route('cetak') }}" target="_blank" class="card border-0 bg-success bg-opacity-10 text-success h-100 text-decoration-none">
                                     <div class="card-body text-center py-4">
                                         <div class="mb-3">
                                             <i class="fas fa-file-export fa-3x"></i>
